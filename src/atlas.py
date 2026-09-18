@@ -107,7 +107,8 @@ class Atlas:
 
 if __name__ == "__main__":
 
-    graph = StudyGraph("../hackathon-data/data")
+    data_path = Path(__file__).resolve().parents[1] / "hackathon-data" / "data"
+    graph = StudyGraph(str(data_path))
     graph.build()
 
     atlas = Atlas(graph)
