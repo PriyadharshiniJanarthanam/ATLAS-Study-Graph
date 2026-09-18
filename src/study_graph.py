@@ -5,6 +5,7 @@ import os
 class StudyGraph:
 
     def __init__(self, data_dir):
+
         self.data_dir = data_dir
 
         self.dm = []
@@ -19,14 +20,81 @@ class StudyGraph:
 
         self.patient_data = {}
 
+        self.indexes = {
+            "DM": {},
+            "AE": {},
+            "LB": {},
+            "VS": {},
+            "EX": {},
+            "CM": {},
+            "DS": {},
+            "MH": {},
+            "EG": {}
+        }
+
     def load_csv(self, filename):
+
         path = os.path.join(self.data_dir, filename)
 
         with open(path, "r", encoding="utf-8-sig") as file:
             return list(csv.DictReader(file))
 
-    def build(self):
+    def filter_by_cut(self, records, cut):
+
+        if cut is None:
+            return records
+
+        filtered = []
+
+        for record in records:
+
+            value = record.get("cut_available", "")
+
+            if value != "" and int(value) <= cut:
+                filtered.append(record)
+
+        return filtered
+
+    def build_indexes(self):
+
+        print("\nBuilding indexes...")
+
+        for record in self.dm:
+
+            usubjid = record["USUBJID"]
+
+            self.indexes["DM"][usubjid] = record
+
+        domains = {
+            "AE": self.ae,
+            "LB": self.lb,
+            "VS": self.vs,
+            "EX": self.ex,
+            "CM": self.cm,
+            "DS": self.ds,
+            "MH": self.mh,
+            "EG": self.eg
+        }
+
+        for domain, records in domains.items():
+
+            for record in records:
+
+                usubjid = record["USUBJID"]
+
+                if usubjid not in self.indexes[domain]:
+                    self.indexes[domain][usubjid] = []
+
+                self.indexes[domain][usubjid].append(record)
+
+        print("Indexes created.")
+
+    def build(self, cut=None):
+
         print("Loading study data...")
+
+        if cut is not None:
+            print("Using cut:", cut)
 
         self.dm = self.load_csv("DM.csv")
         self.ae = self.load_csv("AE.csv")
@@ -38,6 +106,8 @@ class StudyGraph:
         self.mh = self.load_csv("MH.csv")
         self.eg = self.load_csv("EG.csv")
 
+        print("\nOriginal records:")
+
         print("DM:", len(self.dm))
         print("AE:", len(self.ae))
         print("LB:", len(self.lb))
@@ -48,8 +118,23 @@ class StudyGraph:
         print("MH:", len(self.mh))
         print("EG:", len(self.eg))
 
-        # Create Patient 360
+        self.dm = self.filter_by_cut(self.dm, cut)
+        self.ae = self.filter_by_cut(self.ae, cut)
+        self.lb = self.filter_by_cut(self.lb, cut)
+        self.vs = self.filter_by_cut(self.vs, cut)
+        self.ex = self.filter_by_cut(self.ex, cut)
+        self.cm = self.filter_by_cut(self.cm, cut)
+        self.ds = self.filter_by_cut(self.ds, cut)
+        self.mh = self.filter_by_cut(self.mh, cut)
+        self.eg = self.filter_by_cut(self.eg, cut)
+
+        self.patient_data = {}
+
+        for domain in self.indexes:
+            self.indexes[domain] = {}
+
         for subject in self.dm:
+
             usubjid = subject["USUBJID"]
 
             self.patient_data[usubjid] = {
@@ -64,7 +149,6 @@ class StudyGraph:
                 "EG": []
             }
 
-        # Connect records to patients
         domains = {
             "AE": self.ae,
             "LB": self.lb,
@@ -77,13 +161,17 @@ class StudyGraph:
         }
 
         for domain, records in domains.items():
+
             for record in records:
+
                 usubjid = record["USUBJID"]
 
                 if usubjid in self.patient_data:
                     self.patient_data[usubjid][domain].append(record)
 
-        print("Patient 360 created:", len(self.patient_data))
+        self.build_indexes()
+
+        print("\nPatient 360 created:", len(self.patient_data))
 
         return {
             "DM": len(self.dm),
@@ -97,11 +185,31 @@ class StudyGraph:
             "EG": len(self.eg),
             "patients": len(self.patient_data)
         }
+
     def patient360(self, usubjid):
+
         if usubjid not in self.patient_data:
             return {}
 
         return self.patient_data[usubjid]
+
+    def get_patient_records(self, usubjid):
+
+        if usubjid not in self.indexes["DM"]:
+            return {}
+
+        return {
+            "DM": self.indexes["DM"].get(usubjid),
+            "AE": self.indexes["AE"].get(usubjid, []),
+            "LB": self.indexes["LB"].get(usubjid, []),
+            "VS": self.indexes["VS"].get(usubjid, []),
+            "EX": self.indexes["EX"].get(usubjid, []),
+            "CM": self.indexes["CM"].get(usubjid, []),
+            "DS": self.indexes["DS"].get(usubjid, []),
+            "MH": self.indexes["MH"].get(usubjid, []),
+            "EG": self.indexes["EG"].get(usubjid, [])
+        }
+
 
 if __name__ == "__main__":
 
@@ -111,16 +219,37 @@ if __name__ == "__main__":
 
     stats = graph.build()
 
+    print("\nFinal statistics:")
     print(stats)
 
-    patient = graph.patient360("042-S01-001")
+    patient_id = "042-S01-001"
 
-    print("Patient:", patient["DM"]["USUBJID"])
-    print("AE records:", len(patient["AE"]))
-    print("LB records:", len(patient["LB"]))
-    print("VS records:", len(patient["VS"]))
-    print("EX records:", len(patient["EX"]))
-    print("CM records:", len(patient["CM"]))
-    print("DS records:", len(patient["DS"]))
-    print("MH records:", len(patient["MH"]))
-    print("EG records:", len(patient["EG"]))
+    patient = graph.patient360(patient_id)
+
+    if patient:
+
+        print("\nPatient 360:", patient_id)
+
+        print("AE:", len(patient["AE"]))
+        print("LB:", len(patient["LB"]))
+        print("VS:", len(patient["VS"]))
+        print("EX:", len(patient["EX"]))
+        print("CM:", len(patient["CM"]))
+        print("DS:", len(patient["DS"]))
+        print("MH:", len(patient["MH"]))
+        print("EG:", len(patient["EG"]))
+
+    records = graph.get_patient_records(patient_id)
+
+    print("\nFast lookup test:")
+
+    if records:
+
+        print("Patient found!")
+        print("Labs:", len(records["LB"]))
+        print("Vitals:", len(records["VS"]))
+        print("Exposure:", len(records["EX"]))
+
+    else:
+
+        print("Patient not found.")
