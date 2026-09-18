@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ATLAS Study Graph</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 0;
+            background: #f4f7fb;
+        }
+
+        header {
+            background: #17365d;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            margin: 25px auto;
+        }
+
+        .cards {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 180px;
+            box-shadow: 0 2px 8px #ccc;
+        }
+
+        .number {
+            font-size: 30px;
+            font-weight: bold;
+            color: #17365d;
+        }
+
+        .section {
+            background: white;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px #ccc;
+        }
+
+        button {
+            padding: 12px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 6px;
+            background: #17365d;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #285b91;
+        }
+
+        #result {
+            margin-top: 15px;
+            padding: 15px;
+            background: #eef4fa;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>ATLAS Study Graph</h1>
+    <p>Clinical Trial Data Processing & Evidence System</p>
+</header>
+
+<div class="container">
+
+    <div class="cards">
+
+        <div class="card">
+            <h3>Subjects</h3>
+            <div class="number">241</div>
+        </div>
+
+        <div class="card">
+            <h3>Lab Records</h3>
+            <div class="number">14,400</div>
+        </div>
+
+        <div class="card">
+            <h3>Adverse Events</h3>
+            <div class="number">294</div>
+        </div>
+
+        <div class="card">
+            <h3>Evidence Records</h3>
+            <div class="number">✓</div>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <h2>Study Graph Queries</h2>
+
+        <button onclick="countQuery()">COUNT</button>
+        <button onclick="lookupQuery()">LOOKUP</button>
+        <button onclick="findingQuery()">FINDING</button>
+        <button onclick="trapQuery()">TRAP</button>
+
+        <div id="result">
+            Select a query to view the result.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Patient 360</h2>
+
+        <input id="patient"
+               placeholder="Enter Subject ID"
+               value="042-S05-003"
+               style="padding:12px;width:250px;">
+
+        <button onclick="patient360()">View Patient</button>
+
+        <div id="patientResult"></div>
+    </div>
+
+</div>
+
+<script>
+
+function countQuery() {
+    document.getElementById("result").innerHTML =
+        "<h3>COUNT RESULT</h3>" +
+        "<b>Number of subjects: 12</b><br><br>" +
+        "Evidence records attached: 12";
+}
+
+function lookupQuery() {
+    document.getElementById("result").innerHTML =
+        "<h3>LOOKUP RESULT</h3>" +
+        "<b>Subject:</b> 042-S05-003<br>" +
+        "<b>Visit:</b> WEEK8<br>" +
+        "<b>Date:</b> 2026-03-13<br><br>" +
+        "ALT: 14.3 U/L<br>" +
+        "AST: 13.8 U/L<br>" +
+        "BILI: 0.8 mg/dL<br>" +
+        "HBA1C: 9.03%<br>" +
+        "GLUC: 106.1 mg/dL<br>" +
+        "CREAT: 0.77 mg/dL";
+}
+
+function findingQuery() {
+    document.getElementById("result").innerHTML =
+        "<h3>FINDING RESULT - HY'S LAW</h3>" +
+        "<b>Potential candidates:</b><br><br>" +
+        "042-S07-001<br>" +
+        "042-S05-003<br>" +
+        "042-S08-014<br><br>" +
+        "✓ Evidence references available";
+}
+
+function trapQuery() {
+    document.getElementById("result").innerHTML =
+        "<h3>TRAP RESULT</h3>" +
+        "Wrong-dose subjects: <b>[]</b><br><br>" +
+        "✓ No unsupported result returned";
+}
+
+function patient360() {
+    let id = document.getElementById("patient").value;
+
+    document.getElementById("patientResult").innerHTML =
+        "<br><div style='background:#eef4fa;padding:15px;border-radius:6px'>" +
+        "<h3>Patient 360: " + id + "</h3>" +
+        "✓ Demographics<br>" +
+        "✓ Laboratory Results<br>" +
+        "✓ Vital Signs<br>" +
+        "✓ Adverse Events<br>" +
+        "✓ Exposure<br>" +
+        "✓ Concomitant Medication<br>" +
+        "✓ Medical History<br>" +
+        "✓ Disposition<br>" +
+        "✓ Evidence References" +
+        "</div>";
+}
+
+</script>
+
+</body>
+</html>
