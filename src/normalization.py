@@ -1,5 +1,6 @@
 import csv
 import os
+import re
 from datetime import datetime
 
 
@@ -8,14 +9,12 @@ class DataNormalizer:
     def __init__(self, data_dir):
         self.data_dir = data_dir
 
-    # Load a CSV file
     def load_csv(self, filename):
         path = os.path.join(self.data_dir, filename)
 
         with open(path, "r", encoding="utf-8-sig") as file:
             return list(csv.DictReader(file))
 
-    # Normalize dates
     def normalize_date(self, value):
         if not value:
             return None
@@ -27,7 +26,12 @@ class DataNormalizer:
             "%d-%m-%Y",
             "%d/%m/%Y",
             "%m/%d/%Y",
-            "%Y/%m/%d"
+            "%Y/%m/%d",
+            "%d-%b-%Y",
+            "%d/%b/%Y",
+            "%d %b %Y",
+            "%d-%B-%Y",
+            "%d/%B/%Y"
         ]
 
         for fmt in formats:
@@ -39,38 +43,52 @@ class DataNormalizer:
 
         return value
 
-    # Normalize laboratory values
     def normalize_lab_value(self, value):
-
         if value is None:
             return None
 
         value = value.strip()
 
-        # Missing value
         if value == "":
             return None
 
-        # Below detection limit
-        if value.startswith("<"):
-            return {
-                "value": value[1:].strip(),
-                "operator": "<"
-            }
-
-        # Non-detect / non-numeric
         if value.upper() == "ND":
             return {
                 "value": None,
                 "operator": "ND"
             }
 
-        # Decimal comma -> decimal point
-        value = value.replace(",", ".")
+        match = re.fullmatch(
+            r"<\s*([0-9]+(?:[.,][0-9]+)?)",
+            value
+        )
+
+        if match:
+            limit = float(match.group(1).replace(",", "."))
+
+            return {
+                "value": limit,
+                "operator": "<"
+            }
+
+        match = re.fullmatch(
+            r">\s*([0-9]+(?:[.,][0-9]+)?)",
+            value
+        )
+
+        if match:
+            limit = float(match.group(1).replace(",", "."))
+
+            return {
+                "value": limit,
+                "operator": ">"
+            }
+
+        numeric_value = value.replace(",", ".")
 
         try:
             return {
-                "value": float(value),
+                "value": float(numeric_value),
                 "operator": "="
             }
 
@@ -80,9 +98,27 @@ class DataNormalizer:
                 "operator": "="
             }
 
-    # Normalize one row
-    def normalize_row(self, row):
+    def convert_unit(self, value, from_unit, to_unit):
+        if value is None:
+            return None
 
+        if from_unit == to_unit:
+            return value
+
+        if from_unit.lower() == "ukat/l" and to_unit.upper() == "U/L":
+            return round(value * 60,2)
+
+        return value
+
+    def is_date_column(self, key):
+        key_upper = key.upper()
+
+        return (
+            "DATE" in key_upper
+            or key_upper.endswith("DTC")
+        )
+
+    def normalize_row(self, row):
         normalized = {}
 
         for key, value in row.items():
@@ -96,7 +132,10 @@ class DataNormalizer:
             if value == "":
                 normalized[key] = None
 
-            elif "date" in key.lower():
+            elif key.upper() == "LBORRES":
+                normalized[key] = self.normalize_lab_value(value)
+
+            elif self.is_date_column(key):
                 normalized[key] = self.normalize_date(value)
 
             else:
@@ -104,9 +143,7 @@ class DataNormalizer:
 
         return normalized
 
-    # Normalize an entire CSV table
     def normalize_table(self, filename):
-
         rows = self.load_csv(filename)
 
         normalized_rows = []
