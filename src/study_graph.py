@@ -50,10 +50,45 @@ class StudyGraph:
 
             value = record.get("cut_available", "")
 
-            if value != "" and int(value) <= cut:
+            if value == "" or int(value) <= cut:
                 filtered.append(record)
 
         return filtered
+
+    def apply_corrections(self, records, cut):
+        if cut is None:
+            return records
+
+        corrections_path = os.path.join(self.data_dir, "corrections.csv")
+        if not os.path.exists(corrections_path):
+            return records
+
+        corrections = self.load_csv("corrections.csv")
+        by_key = {}
+        for correction in corrections:
+            if int(correction["cut"]) <= cut:
+                key = (
+                    correction["domain"],
+                    correction["usubjid"],
+                    correction["seq"],
+                    correction["field"],
+                )
+                by_key[key] = correction["new_value"]
+
+        for record in records:
+            domain = "LB" if "LBSEQ" in record else ""
+            if not domain:
+                continue
+            for field in record:
+                key = (
+                    domain,
+                    record["USUBJID"],
+                    record["LBSEQ"],
+                    field,
+                )
+                if key in by_key:
+                    record[field] = by_key[key]
+        return records
 
     def build_indexes(self):
 
@@ -127,6 +162,9 @@ class StudyGraph:
         self.ds = self.filter_by_cut(self.ds, cut)
         self.mh = self.filter_by_cut(self.mh, cut)
         self.eg = self.filter_by_cut(self.eg, cut)
+
+        for domain in ("dm", "ae", "lb", "vs", "ex", "cm", "ds", "mh", "eg"):
+            setattr(self, domain, self.apply_corrections(getattr(self, domain), cut))
 
         self.patient_data = {}
 
