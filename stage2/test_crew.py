@@ -1,5 +1,7 @@
 import unittest
 
+from stage2 import crew
+
 
 class TestReviewCrew(unittest.TestCase):
 

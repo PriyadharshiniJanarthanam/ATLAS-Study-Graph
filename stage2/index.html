@@ -1,157 +1,161 @@
-
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>ATLAS Monitor - Human Gate</title>
 
     <style>
-
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
             background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #172554;
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        header h1 {
             margin: 0;
-            padding: 30px;
+        }
+
+        header p {
+            margin-top: 8px;
         }
 
         .container {
-            max-width: 1000px;
-            margin: auto;
-        }
-
-        .header {
-            background: #1f2937;
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            margin: 0;
-        }
-
-        .header p {
-            margin-bottom: 0;
+            width: 90%;
+            max-width: 1100px;
+            margin: 30px auto;
         }
 
         .card {
             background: white;
             padding: 25px;
-            margin: 20px 0;
+            margin-bottom: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px #ccc;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
 
         .card h2 {
             margin-top: 0;
-            color: #1f2937;
+            color: #172554;
         }
 
-        .pending {
-            border-left: 6px solid orange;
-        }
-
-        .critical {
-            color: red;
-            font-weight: bold;
-        }
-
-        .evidence {
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: monospace;
-        }
-
-        .buttons {
-            margin-top: 20px;
-        }
-
-        button {
-            padding: 12px 20px;
-            margin-right: 8px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button:hover {
-            opacity: 0.8;
-        }
-
-        .approve {
-            background: green;
-            color: white;
-        }
-
-        .reject {
-            background: red;
-            color: white;
-        }
-
-        .clarify {
-            background: orange;
-            color: white;
-        }
-
-        #message {
-            margin-top: 20px;
-            padding: 12px;
-            font-weight: bold;
-        }
-
-        .report-grid {
+        .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 15px;
         }
 
         .stat {
-            background: #f1f5f9;
-            padding: 15px;
-            border-radius: 8px;
+            background: #eef2ff;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
         }
 
         .stat h3 {
-            margin: 5px;
-            font-size: 28px;
+            margin: 0;
+            font-size: 30px;
+            color: #172554;
         }
 
         .stat p {
-            margin: 5px;
-            color: #555;
+            margin-bottom: 0;
+            font-weight: bold;
+        }
+
+        .escalation {
+            border-left: 6px solid #dc2626;
+            background: #fff1f2;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .escalation h3 {
+            color: #b91c1c;
+            margin-top: 0;
+        }
+
+        .evidence {
+            background: #f3f4f6;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 18px;
+            margin: 8px 5px 0 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .approve {
+            background: #16a34a;
+            color: white;
+        }
+
+        .reject {
+            background: #dc2626;
+            color: white;
+        }
+
+        .clarify {
+            background: #f59e0b;
+            color: white;
         }
 
         .workflow {
             display: flex;
             justify-content: space-between;
-            flex-wrap: wrap;
+            align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .node {
-            background: #e5e7eb;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
             flex: 1;
             min-width: 120px;
+            text-align: center;
+            padding: 18px 10px;
+            background: #e0e7ff;
+            border-radius: 8px;
             font-weight: bold;
         }
 
-        .footer {
-            text-align: center;
-            color: #666;
-            margin-top: 30px;
+        .arrow {
+            font-size: 25px;
+            font-weight: bold;
         }
 
-        @media (max-width: 700px) {
+        #message {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            display: none;
+            background: #dcfce7;
+            color: #166534;
+        }
 
-            .report-grid {
+        .loading {
+            text-align: center;
+            padding: 30px;
+            font-size: 18px;
+        }
+
+        @media(max-width: 800px) {
+            .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
 
@@ -159,202 +163,85 @@
                 flex-direction: column;
             }
 
+            .arrow {
+                transform: rotate(90deg);
+            }
         }
-
     </style>
-
 </head>
 
-
 <body>
+
+<header>
+    <h1>ATLAS Monitor</h1>
+    <p>Problem 2 - Multi-Agent Review Crew & Human Gate</p>
+</header>
 
 
 <div class="container">
 
+    <!-- HUMAN GATE -->
+    <div class="card">
 
-    <!-- HEADER -->
+        <h2>Human Gate - Pending Escalations</h2>
 
-    <div class="header">
-
-        <h1>ATLAS Monitor</h1>
-
-        <p>
-            Problem 2 - Multi-Agent Review Crew and Human Gate
-        </p>
-
-    </div>
-
-
-    <!-- PENDING ESCALATION -->
-
-    <div class="card pending">
-
-        <h2>Pending Escalation</h2>
-
-        <p>
-            <b>Code:</b>
-            <span id="code"></span>
-        </p>
-
-        <p>
-            <b>Subject:</b>
-            <span id="subject"></span>
-        </p>
-
-        <p>
-            <b>Site:</b>
-            <span id="site"></span>
-        </p>
-
-        <p class="critical">
-
-            Severity:
-            <span id="severity"></span>
-
-        </p>
-
-
-        <p>
-
-            <b>Finding:</b>
-
-            <span id="rationale"></span>
-
-        </p>
-
-
-        <p>
-
-            <b>Evidence:</b>
-
-        </p>
-
-        <div class="evidence">
-
-            <span id="evidence"></span>
-
+        <div id="escalations">
+            <div class="loading">
+                Loading review data...
+            </div>
         </div>
 
-
-        <!-- HUMAN GATE BUTTONS -->
-
-        <div class="buttons">
-
-            <button
-                class="approve"
-                onclick="decision('APPROVED')">
-
-                APPROVED
-
-            </button>
-
-
-            <button
-                class="reject"
-                onclick="decision('REJECTED')">
-
-                REJECTED
-
-            </button>
-
-
-            <button
-                class="clarify"
-                onclick="decision('CLARIFY')">
-
-                CLARIFY
-
-            </button>
-
-        </div>
-
-
-        <p id="message"></p>
+        <div id="message"></div>
 
     </div>
 
 
     <!-- CYCLE REPORT -->
-
     <div class="card">
 
         <h2>Cycle Report</h2>
 
-
-        <div class="report-grid">
-
+        <div class="stats">
 
             <div class="stat">
-
-                <p>Cut</p>
-
-                <h3 id="cut">-</h3>
-
-            </div>
-
-
-            <div class="stat">
-
-                <p>Protocol</p>
-
-                <h3 id="protocol">-</h3>
-
-            </div>
-
-
-            <div class="stat">
-
+                <h3 id="findings">0</h3>
                 <p>Findings</p>
-
-                <h3 id="findings">-</h3>
-
             </div>
 
-
             <div class="stat">
-
+                <h3 id="escalationsCount">0</h3>
                 <p>Escalations</p>
-
-                <h3 id="escalations">-</h3>
-
             </div>
 
-
             <div class="stat">
-
+                <h3 id="queries">0</h3>
                 <p>Queries</p>
-
-                <h3 id="queries">-</h3>
-
             </div>
 
-
             <div class="stat">
-
+                <h3 id="deviations">0</h3>
                 <p>Deviations</p>
-
-                <h3 id="deviations">-</h3>
-
             </div>
 
-
             <div class="stat">
-
+                <h3 id="trace">0</h3>
                 <p>Trace Entries</p>
-
-                <h3 id="trace">-</h3>
-
             </div>
-
 
             <div class="stat">
-
+                <h3 id="approved">0</h3>
                 <p>Approved Actions</p>
-
-                <h3 id="approved">-</h3>
-
             </div>
 
+            <div class="stat">
+                <h3 id="cut">-</h3>
+                <p>Data Cut</p>
+            </div>
+
+            <div class="stat">
+                <h3 id="protocol">-</h3>
+                <p>Protocol Version</p>
+            </div>
 
         </div>
 
@@ -362,202 +249,360 @@
 
 
     <!-- WORKFLOW -->
-
     <div class="card">
 
         <h2>Review Workflow</h2>
 
-
         <div class="workflow">
-
 
             <div class="node">
                 1. Detect
             </div>
 
+            <div class="arrow">
+                →
+            </div>
 
             <div class="node">
                 2. Medical Review
             </div>
 
+            <div class="arrow">
+                →
+            </div>
 
             <div class="node">
                 3. Data Manager
             </div>
 
+            <div class="arrow">
+                →
+            </div>
 
             <div class="node">
                 4. Compliance
             </div>
 
+            <div class="arrow">
+                →
+            </div>
 
             <div class="node">
                 5. Human Gate
             </div>
 
+            <div class="arrow">
+                →
+            </div>
 
             <div class="node">
                 6. Execute
             </div>
 
-
         </div>
 
     </div>
 
-
-    <div class="footer">
-
-        ATLAS Study Monitoring System
-
-    </div>
-
-
 </div>
-
 
 
 <script>
 
+    // ----------------------------------------
+    // LOAD REAL BACKEND DATA
+    // ----------------------------------------
 
-/* LOAD REPORT FROM report.json */
+    async function loadCycle() {
 
-fetch("report.json")
+        try {
 
-.then(function(response) {
+            const response = await fetch(
+                "/api/cycle?cut=6&protocol=2"
+            );
 
-    return response.json();
+            if (!response.ok) {
+                throw new Error("Backend request failed");
+            }
 
-})
+            const data = await response.json();
+
+            console.log("Backend data:", data);
+
+            displaySummary(data.summary);
+
+            displayEscalations(data.escalations);
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            document.getElementById("escalations").innerHTML =
+                "<p style='color:red;'>Unable to load backend data.</p>";
+
+        }
+
+    }
 
 
-.then(function(data) {
+    // ----------------------------------------
+    // DISPLAY SUMMARY
+    // ----------------------------------------
+
+    function displaySummary(summary) {
+
+        document.getElementById("findings").textContent =
+            summary.findings;
+
+        document.getElementById("escalationsCount").textContent =
+            summary.escalations;
+
+        document.getElementById("queries").textContent =
+            summary.queries;
+
+        document.getElementById("deviations").textContent =
+            summary.deviations;
+
+        document.getElementById("trace").textContent =
+            summary.trace_entries;
+
+        document.getElementById("approved").textContent =
+            summary.approved_actions;
+
+        document.getElementById("cut").textContent =
+            summary.cut;
+
+        document.getElementById("protocol").textContent =
+            "v" + summary.protocol_version;
+
+    }
 
 
-    /* Pending escalation */
+    // ----------------------------------------
+    // DISPLAY ESCALATIONS
+    // ----------------------------------------
 
-    if (
-        data.pending_escalations &&
-        data.pending_escalations.length > 0
+    function displayEscalations(escalations) {
+
+        const container =
+            document.getElementById("escalations");
+
+        container.innerHTML = "";
+
+        if (!escalations || escalations.length === 0) {
+
+            container.innerHTML =
+                "<p>No pending escalations.</p>";
+
+            return;
+
+        }
+
+
+        escalations.forEach(function(item) {
+
+            const evidence =
+                item.evidence && item.evidence.length > 0
+                ? item.evidence[0]
+                : null;
+
+
+            let evidenceText = "No evidence";
+
+            if (evidence) {
+
+                evidenceText =
+                    "Domain: " + evidence.domain +
+                    " | Subject: " + evidence.usubjid +
+                    " | Sequence: " + evidence.seq;
+
+            }
+
+
+            const div =
+                document.createElement("div");
+
+            div.className = "escalation";
+
+
+            div.innerHTML = `
+
+                <h3>${item.code}</h3>
+
+                <p>
+                    <strong>Subject:</strong>
+                    ${item.usubjid}
+                </p>
+
+                <p>
+                    <strong>Severity:</strong>
+                    ${item.severity}
+                </p>
+
+                <p>
+                    <strong>Summary:</strong>
+                    ${item.summary}
+                </p>
+
+                <div class="evidence">
+                    <strong>Evidence:</strong>
+                    ${evidenceText}
+                </div>
+
+                <button
+                    class="approve"
+                    onclick="makeDecision(
+                        '${item.code}',
+                        '${item.usubjid}',
+                        'APPROVED'
+                    )">
+                    APPROVED
+                </button>
+
+                <button
+                    class="reject"
+                    onclick="makeDecision(
+                        '${item.code}',
+                        '${item.usubjid}',
+                        'REJECTED'
+                    )">
+                    REJECTED
+                </button>
+
+                <button
+                    class="clarify"
+                    onclick="makeDecision(
+                        '${item.code}',
+                        '${item.usubjid}',
+                        'CLARIFY'
+                    )">
+                    CLARIFY
+                </button>
+
+            `;
+
+
+            container.appendChild(div);
+
+        });
+
+    }
+
+
+    // ----------------------------------------
+    // SEND HUMAN DECISION TO BACKEND
+    // ----------------------------------------
+
+    async function makeDecision(
+        code,
+        usubjid,
+        decision
     ) {
 
-        let e =
-            data.pending_escalations[0];
+        let reason = "";
+
+        if (decision === "APPROVED") {
+
+            reason =
+                "Serious event confirmed; execute escalation.";
+
+        }
+
+        else if (decision === "REJECTED") {
+
+            reason =
+                "Downgrade to monitoring based on human review.";
+
+        }
+
+        else if (decision === "CLARIFY") {
+
+            reason =
+                "Additional clarification requested from study data.";
+
+        }
 
 
-        document.getElementById("code")
-            .textContent = e.code;
+        try {
+
+            const response = await fetch(
+                "/api/decision",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        code: code,
+
+                        usubjid: usubjid,
+
+                        decision: decision,
+
+                        reason: reason
+
+                    })
+
+                }
+            );
 
 
-        document.getElementById("subject")
-            .textContent = e.usubjid;
+            const result =
+                await response.json();
 
 
-        document.getElementById("site")
-            .textContent = e.site;
+            if (!response.ok) {
+
+                throw new Error(
+                    result.error || "Decision failed"
+                );
+
+            }
 
 
-        document.getElementById("severity")
-            .textContent = e.severity;
+            const message =
+                document.getElementById("message");
+
+            message.style.display = "block";
+
+            message.innerHTML =
+                "<strong>" +
+                decision +
+                "</strong> decision recorded for " +
+                usubjid;
 
 
-        document.getElementById("rationale")
-            .textContent = e.rationale;
+            console.log(
+                "Decision result:",
+                result
+            );
 
 
-        document.getElementById("evidence")
-            .textContent = e.evidence;
+        }
 
-    }
+        catch (error) {
 
+            alert(
+                "Error: " +
+                error.message
+            );
 
-    /* Cycle report */
-
-    document.getElementById("cut")
-        .textContent = data.cut;
-
-
-    document.getElementById("protocol")
-        .textContent = data.protocol_version;
-
-
-    document.getElementById("findings")
-        .textContent = data.findings;
-
-
-    document.getElementById("escalations")
-        .textContent = data.escalations;
-
-
-    document.getElementById("queries")
-        .textContent = data.queries;
-
-
-    document.getElementById("deviations")
-        .textContent = data.deviations;
-
-
-    document.getElementById("trace")
-        .textContent = data.trace_entries;
-
-
-    document.getElementById("approved")
-        .textContent = data.approved_actions;
-
-
-})
-
-
-.catch(function(error) {
-
-    document.getElementById("message")
-        .textContent =
-        "Could not load report.json";
-
-    console.log(error);
-
-});
-
-
-
-/* HUMAN GATE */
-
-function decision(type) {
-
-
-    let message =
-        document.getElementById("message");
-
-
-    if (type === "APPROVED") {
-
-        message.textContent =
-            "APPROVED: Serious event confirmed. Action can be executed.";
-
-    }
-
-
-    else if (type === "REJECTED") {
-
-        message.textContent =
-            "REJECTED: Downgraded to monitoring. Reason recorded.";
+        }
 
     }
 
 
-    else if (type === "CLARIFY") {
+    // ----------------------------------------
+    // START
+    // ----------------------------------------
 
-        message.textContent =
-            "CLARIFY: Answer required from the ATLAS study graph before resubmission.";
-
-    }
-
-}
+    loadCycle();
 
 </script>
 
-
 </body>
-
 </html>
-
