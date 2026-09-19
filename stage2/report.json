@@ -1,0 +1,20 @@
+{
+  "cut": 6,
+  "protocol_version": 2,
+  "findings": 12,
+  "escalations": 4,
+  "queries": 8,
+  "deviations": 8,
+  "trace_entries": 6,
+  "approved_actions": 0,
+  "pending_escalations": [
+    {
+      "code": "SAE_MISCODED",
+      "usubjid": "042-S02-004",
+      "site": "S02",
+      "severity": "CRITICAL",
+      "rationale": "Cellulitis has AESHOSP=Y but AESER=N.",
+      "evidence": "AE / 042-S02-004 / Seq 1"
+    }
+  ]
+}
